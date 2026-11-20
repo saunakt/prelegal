@@ -1,13 +1,32 @@
 import ReactMarkdown from "react-markdown";
 import {
   formatDate,
+  orBlank,
   renderStandardTerms,
   years,
   type NdaData,
   type Party,
 } from "@/lib/nda";
 
-const BLANK = "[__________]";
+type Props = {
+  data: NdaData;
+  standardTerms: string;
+};
+
+type SignatureRow = {
+  label: string;
+  value: (party: Party) => string;
+  hint?: string;
+};
+
+const signatureRows: SignatureRow[] = [
+  { label: "Signature", value: () => "" },
+  { label: "Print Name", value: (p) => p.name },
+  { label: "Title", value: (p) => p.title },
+  { label: "Company", value: (p) => p.company },
+  { label: "Notice Address", value: (p) => p.noticeAddress, hint: "Use either email or postal address" },
+  { label: "Date", value: (p) => formatDate(p.date) },
+];
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -32,22 +51,7 @@ function PartyCell({ value }: { value: string }) {
   return <td className="border border-neutral-400 px-2 py-2 align-top whitespace-pre-wrap">{value}</td>;
 }
 
-export default function NdaPreview({
-  data,
-  standardTerms,
-}: {
-  data: NdaData;
-  standardTerms: string;
-}) {
-  const rows: [string, (p: Party) => string, string?][] = [
-    ["Signature", () => ""],
-    ["Print Name", (p) => p.name],
-    ["Title", (p) => p.title],
-    ["Company", (p) => p.company],
-    ["Notice Address", (p) => p.noticeAddress, "Use either email or postal address"],
-    ["Date", (p) => formatDate(p.date)],
-  ];
-
+export default function NdaPreview({ data, standardTerms }: Props) {
   return (
     <article className="nda-document font-serif text-[15px] leading-relaxed">
       <h1 className="text-2xl font-bold">Mutual Non-Disclosure Agreement</h1>
@@ -65,11 +69,11 @@ export default function NdaPreview({
       </p>
 
       <Field label="Purpose" hint="How Confidential Information may be used">
-        <p>{data.purpose.trim() || BLANK}</p>
+        <p>{orBlank(data.purpose)}</p>
       </Field>
 
       <Field label="Effective Date">
-        <p>{formatDate(data.effectiveDate) || BLANK}</p>
+        <p>{orBlank(formatDate(data.effectiveDate))}</p>
       </Field>
 
       <Field label="MNDA Term" hint="The length of this MNDA">
@@ -91,8 +95,8 @@ export default function NdaPreview({
       </Field>
 
       <Field label="Governing Law & Jurisdiction">
-        <p>Governing Law: {data.governingLaw.trim() || BLANK}</p>
-        <p>Jurisdiction: {data.jurisdiction.trim() || BLANK}</p>
+        <p>Governing Law: {orBlank(data.governingLaw)}</p>
+        <p>Jurisdiction: {orBlank(data.jurisdiction)}</p>
       </Field>
 
       <Field label="MNDA Modifications">
@@ -113,14 +117,14 @@ export default function NdaPreview({
           </tr>
         </thead>
         <tbody>
-          {rows.map(([label, get, hint]) => (
+          {signatureRows.map(({ label, value, hint }) => (
             <tr key={label} className={label === "Signature" ? "h-14" : undefined}>
               <th className="border border-neutral-400 px-2 py-2 text-left align-top font-semibold">
                 {label}
                 {hint && <span className="block text-xs font-normal italic text-neutral-500">{hint}</span>}
               </th>
-              <PartyCell value={get(data.party1)} />
-              <PartyCell value={get(data.party2)} />
+              <PartyCell value={value(data.party1)} />
+              <PartyCell value={value(data.party2)} />
             </tr>
           ))}
         </tbody>

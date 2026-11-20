@@ -2,12 +2,15 @@ import { expect, test } from "@playwright/test";
 
 // End-to-end: a user completes the whole flow and produces a PDF.
 
+type PrintSpyWindow = Window & { __printCalls: number };
+
 test("user fills the NDA and downloads a PDF", async ({ page }) => {
   // The Download PDF button calls window.print(); record the call instead of opening a dialog.
   await page.addInitScript(() => {
-    (window as unknown as { __printCalls: number }).__printCalls = 0;
+    const spy = window as unknown as PrintSpyWindow;
+    spy.__printCalls = 0;
     window.print = () => {
-      (window as unknown as { __printCalls: number }).__printCalls++;
+      spy.__printCalls++;
     };
   });
 
@@ -33,7 +36,7 @@ test("user fills the NDA and downloads a PDF", async ({ page }) => {
   await expect(doc).toContainText("Globex LLC");
 
   await page.getByRole("button", { name: "Download PDF" }).click();
-  expect(await page.evaluate(() => (window as unknown as { __printCalls: number }).__printCalls)).toBe(1);
+  expect(await page.evaluate(() => (window as unknown as PrintSpyWindow).__printCalls)).toBe(1);
 
   // Render the document the way the browser prints it and check the output.
   await page.emulateMedia({ media: "print" });
