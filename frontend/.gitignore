@@ -42,3 +42,9 @@ next-env.d.ts
 
 # Copied from /templates by scripts/copy-templates.mjs
 /content/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
