@@ -7,8 +7,9 @@ type Props = {
   onChange: (next: NdaData) => void;
 };
 
-const input =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600";
+const inputBase =
+  "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600";
+const input = `w-full ${inputBase}`;
 
 function Label({ text, hint, children }: { text: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -34,7 +35,7 @@ function Years({ value, onChange, disabled }: { value: number; onChange: (n: num
       disabled={disabled}
       aria-label="Number of years"
       onChange={(e) => onChange(Math.max(1, Math.floor(Number(e.target.value)) || 1))}
-      className={`${input.replace("w-full ", "")} w-20 disabled:opacity-40`}
+      className={`${inputBase} w-20 disabled:opacity-40`}
     />
   );
 }
@@ -48,8 +49,11 @@ function PartyFields({
   party: Party;
   onChange: (p: Party) => void;
 }) {
-  const set = (key: keyof Party) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    onChange({ ...party, [key]: e.target.value });
+  function set(key: keyof Party) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      onChange({ ...party, [key]: e.target.value });
+  }
+
   return (
     <fieldset className="space-y-3 rounded-lg border border-neutral-200 p-4">
       <Legend>{title}</Legend>
@@ -73,8 +77,9 @@ function PartyFields({
 }
 
 export default function NdaForm({ data, onChange }: Props) {
-  const update = <K extends keyof NdaData>(key: K, value: NdaData[K]) =>
+  function update<K extends keyof NdaData>(key: K, value: NdaData[K]): void {
     onChange({ ...data, [key]: value });
+  }
 
   return (
     <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>

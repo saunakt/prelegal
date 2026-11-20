@@ -5,7 +5,11 @@ import NdaForm from "./NdaForm";
 import NdaPreview from "./NdaPreview";
 import { defaultNda, todayISO, type NdaData } from "@/lib/nda";
 
-export default function NdaApp({ standardTerms }: { standardTerms: string }) {
+type Props = {
+  standardTerms: string;
+};
+
+export default function NdaApp({ standardTerms }: Props) {
   const [data, setData] = useState<NdaData>(defaultNda);
 
   // Default the effective date to today, on the client so it matches the user's calendar.

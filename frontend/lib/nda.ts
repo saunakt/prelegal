@@ -44,9 +44,20 @@ export const defaultNda: NdaData = {
   party2: { ...emptyParty },
 };
 
+/** Placeholder shown wherever a required value has not been filled in yet. */
+export const BLANK = "[__________]";
+
+/** Returns the trimmed value, or the blank placeholder when it is empty. */
+export function orBlank(value: string): string {
+  return value.trim() || BLANK;
+}
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
 export function todayISO(): string {
   const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
@@ -64,7 +75,9 @@ export function years(n: number): string {
   return `${n} year${n === 1 ? "" : "s"}`;
 }
 
-const BLANK = "[__________]";
+function coverPageLink(label: string): RegExp {
+  return new RegExp(`<span class="coverpage_link">${label}</span>`, "g");
+}
 
 /**
  * Prepares the Standard Terms for display: fills in the Governing Law and
@@ -72,10 +85,8 @@ const BLANK = "[__________]";
  * cover-page references into plain defined terms, as in the published agreement.
  */
 export function renderStandardTerms(terms: string, data: NdaData): string {
-  const span = (label: string) =>
-    new RegExp(`<span class="coverpage_link">${label}</span>`, "g");
   return terms
-    .replace(span("Governing Law"), `**${data.governingLaw.trim() || BLANK}**`)
-    .replace(span("Jurisdiction"), `**${data.jurisdiction.trim() || BLANK}**`)
-    .replace(/<span class="coverpage_link">([^<]+)<\/span>/g, "$1");
+    .replace(coverPageLink("Governing Law"), `**${orBlank(data.governingLaw)}**`)
+    .replace(coverPageLink("Jurisdiction"), `**${orBlank(data.jurisdiction)}**`)
+    .replace(coverPageLink("([^<]+)"), "$1");
 }

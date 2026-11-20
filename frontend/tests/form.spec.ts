@@ -1,8 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Functional tests: form behaviour and the live preview.
 
-const preview = (page: import("@playwright/test").Page) => page.getByRole("region", { name: "NDA preview" });
+function preview(page: Page): Locator {
+  return page.getByRole("region", { name: "NDA preview" });
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
